@@ -1,76 +1,77 @@
 const express = require('express');
 const router = express.Router();
-const Contact = require('../models/contact');
+const Student = require('../models/student');
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     Contact:
+ *     Student:
  *       type: object
  *       required:
  *         - firstName
  *         - lastName
  *         - email
- *         - favoriteColor
- *         - birthday
  *       properties:
  *         _id:
  *           type: string
- *           description: The auto-generated ID of the contact
+ *           description: Auto-generated ID
  *         firstName:
  *           type: string
- *           description: The first name of the contact
  *         lastName:
  *           type: string
- *           description: The last name of the contact
  *         email:
  *           type: string
- *           description: The email address of the contact
- *         favoriteColor:
+ *         age:
+ *           type: number
+ *         course:
  *           type: string
- *           description: The contact's favorite color
- *         birthday:
+ *         year:
+ *           type: number
+ *         gender:
  *           type: string
- *           format: date
- *           description: The contact's birthday
+ *         enrollmentDate:
+ *           type: string
  *       example:
- *         firstName: John
- *         lastName: Doe
- *         email: john.doe@example.com
- *         favoriteColor: Blue
- *         birthday: 1990-01-15T00:00:00.000Z
+ *         firstName: Andrew
+ *         lastName: Ssemanda
+ *         email: andrew@gmail.com
+ *         age: 22
+ *         course: Computer Science
+ *         year: 2
+ *         gender: Male
+ *         enrollmentDate: 2024-01-10
  */
 
 /**
  * @swagger
  * tags:
- *   name: Contacts
- *   description: The contacts managing API
+ *   name: Students
+ *   description: Student Management API
  */
 
 /**
  * @swagger
- * /contacts:
+ * /students:
  *   get:
- *     summary: Returns the list of all contacts
- *     tags: [Contacts]
+ *     summary: Get all students
+ *     tags: [Students]
  *     responses:
  *       200:
- *         description: The list of contacts
+ *         description: List of students
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Contact'
+ *                 $ref: '#/components/schemas/Student'
  *       500:
  *         description: Server error
  */
 router.get('/', async (req, res) => {
   try {
-    const contacts = await Contact.find();
-    res.status(200).json(contacts);
+    const students = await Student.find();
+    res.status(200).json(students);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -78,67 +79,51 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
- * /contacts/{id}:
+ * /students/{id}:
  *   get:
- *     summary: Get a contact by ID
- *     tags: [Contacts]
+ *     summary: Get student by ID
+ *     tags: [Students]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
- *         required: true
- *         description: The contact ID
  *     responses:
  *       200:
- *         description: The contact description by ID
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Contact'
+ *         description: Student found
  *       404:
- *         description: The contact was not found
+ *         description: Student not found
  *       500:
  *         description: Server error
  */
 router.get('/:id', async (req, res) => {
   try {
-    const contact = await Contact.findById(req.params.id);
-    if (!contact) {
-      return res.status(404).json({ message: '❌Contact not found' });
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
     }
-    res.status(200).json(contact);
+    res.status(200).json(student);
   } catch (err) {
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'Contact not found, invalid ID format' });
-    }
     res.status(500).json({ message: err.message });
   }
 });
 
 /**
  * @swagger
- * /contacts:
+ * /students:
  *   post:
- *     summary: Create a new contact
- *     tags: [Contacts]
+ *     summary: Create a new student
+ *     tags: [Students]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Contact'
+ *             $ref: '#/components/schemas/Student'
  *     responses:
  *       201:
- *         description: The contact was successfully created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                   description: The ID of the created contact
+ *         description: Student created successfully
  *       400:
  *         description: Missing required fields
  *       500:
@@ -146,27 +131,25 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    // Validate required fields
-    const { firstName, lastName, email, favoriteColor, birthday } = req.body;
-    
-    if (!firstName || !lastName || !email || !favoriteColor || !birthday) {
-      return res.status(400).json({ 
-        message: 'All fields are required: firstName, lastName, email, favoriteColor, birthday' 
-      });
+    const { firstName, lastName, email, age, course, year, gender, enrollmentDate } = req.body;
+
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Create new contact
-    const contact = new Contact({
-      firstName, 
-      lastName, 
-      email, 
-      favoriteColor, 
-      birthday: new Date(birthday)
+    const student = new Student({
+      firstName,
+      lastName,
+      email,
+      age,
+      course,
+      year,
+      gender,
+      enrollmentDate
     });
 
-    // Save to database
-    const newContact = await contact.save();
-    res.status(201).json({ id: newContact._id });
+    const newStudent = await student.save();
+    res.status(201).json(newStudent);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -174,103 +157,73 @@ router.post('/', async (req, res) => {
 
 /**
  * @swagger
- * /contacts/{id}:
- *  put:
- *    summary: Update a contact by ID
- *    tags: [Contacts]
- *    parameters:
- *      - in: path
- *        name: id
- *        schema:
- *          type: string
- *        required: true
- *        description: The contact ID
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            type: object
- *            properties:
- *              firstName:
- *                type: string
- *              lastName:
- *                type: string
- *              email:
- *                type: string
- *              favoriteColor:
- *                type: string
- *              birthday:
- *                type: string
- *                format: date
- *    responses:
- *      204:
- *        description: The contact was updated
- *      404:
- *        description: The contact was not found
- *      500:
- *        description: Server error
- */
-router.put('/:id', async (req, res) => {
-  try {
-    // Check if the contact exists first
-    const contact = await Contact.findById(req.params.id);
-    if (!contact) {
-      return res.status(404).json({ message: 'Contact not found' });
-    }
-
-    // Update contact fields
-    const { firstName, lastName, email, favoriteColor, birthday } = req.body;
-    
-    if (firstName) contact.firstName = firstName;
-    if (lastName) contact.lastName = lastName;
-    if (email) contact.email = email;
-    if (favoriteColor) contact.favoriteColor = favoriteColor;
-    if (birthday) contact.birthday = new Date(birthday);
-
-    // Save updated contact
-    await contact.save();
-    res.status(204).send(); // No content response for successful update
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'Contact not found, invalid ID format' });
-    }
-    res.status(500).json({ message: err.message });
-  }
-});
-
-/**
- * @swagger
- * /contacts/{id}:
- *   delete:
- *     summary: Remove a contact by ID
- *     tags: [Contacts]
+ * /students/{id}:
+ *   put:
+ *     summary: Update a student
+ *     tags: [Students]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *     responses:
+ *       204:
+ *         description: Student updated
+ *       404:
+ *         description: Student not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/:id', async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    Object.assign(student, req.body);
+    await student.save();
+
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * @swagger
+ * /students/{id}:
+ *   delete:
+ *     summary: Delete a student
+ *     tags: [Students]
+ *     parameters:
+ *       - in: path
+ *         name: id
  *         required: true
- *         description: The contact ID
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: The contact was deleted
+ *         description: Student deleted
  *       404:
- *         description: The contact was not found
+ *         description: Student not found
  *       500:
  *         description: Server error
  */
 router.delete('/:id', async (req, res) => {
   try {
-    const contact = await Contact.findByIdAndDelete(req.params.id);
-    if (!contact) {
-      return res.status(404).json({ message: 'Contact not found' });
+    const student = await Student.findByIdAndDelete(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
     }
-    res.status(200).json({ message: 'Contact deleted successfully' });
+
+    res.status(200).json({ message: 'Student deleted successfully' });
   } catch (err) {
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'Contact not found, invalid ID format' });
-    }
     res.status(500).json({ message: err.message });
   }
 });
