@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Student = require('../models/student');
+const auth = require('../middleware/auth');
 
 /**
  * @swagger
@@ -12,10 +13,14 @@ const Student = require('../models/student');
  *         - firstName
  *         - lastName
  *         - email
+ *         - age
+ *         - course
+ *         - year
+ *         - gender
+ *         - enrollmentDate
  *       properties:
  *         _id:
  *           type: string
- *           description: Auto-generated ID
  *         firstName:
  *           type: string
  *         lastName:
@@ -32,6 +37,7 @@ const Student = require('../models/student');
  *           type: string
  *         enrollmentDate:
  *           type: string
+ *           format: date
  *       example:
  *         firstName: Andrew
  *         lastName: Ssemanda
@@ -47,7 +53,7 @@ const Student = require('../models/student');
  * @swagger
  * tags:
  *   name: Students
- *   description: Student Management API
+ *   description: Student API
  */
 
 /**
@@ -56,19 +62,13 @@ const Student = require('../models/student');
  *   get:
  *     summary: Get all students
  *     tags: [Students]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of students
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Student'
- *       500:
- *         description: Server error
  */
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const students = await Student.find();
     res.status(200).json(students);
@@ -81,30 +81,24 @@ router.get('/', async (req, res) => {
  * @swagger
  * /students/{id}:
  *   get:
- *     summary: Get student by ID
+ *     summary: Get a student by ID
  *     tags: [Students]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Student found
- *       404:
- *         description: Student not found
- *       500:
- *         description: Server error
+ *     security:
+ *       - bearerAuth: []
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
+
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
+
     res.status(200).json(student);
   } catch (err) {
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Invalid ID format' });
+    }
     res.status(500).json({ message: err.message });
   }
 });
@@ -115,26 +109,25 @@ router.get('/:id', async (req, res) => {
  *   post:
  *     summary: Create a new student
  *     tags: [Students]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Student'
- *     responses:
- *       201:
- *         description: Student created successfully
- *       400:
- *         description: Missing required fields
- *       500:
- *         description: Server error
+ *     security:
+ *       - bearerAuth: []
  */
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
-    const { firstName, lastName, email, age, course, year, gender, enrollmentDate } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      age,
+      course,
+      year,
+      gender,
+      enrollmentDate
+    } = req.body;
 
-    if (!firstName || !lastName || !email) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    // Validation
+    if (!firstName || !lastName || !email || !age || !course || !year || !gender || !enrollmentDate) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
     const student = new Student({
@@ -145,11 +138,12 @@ router.post('/', async (req, res) => {
       course,
       year,
       gender,
-      enrollmentDate
+      enrollmentDate: new Date(enrollmentDate)
     });
 
     const newStudent = await student.save();
     res.status(201).json(newStudent);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -161,23 +155,10 @@ router.post('/', async (req, res) => {
  *   put:
  *     summary: Update a student
  *     tags: [Students]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *     responses:
- *       204:
- *         description: Student updated
- *       404:
- *         description: Student not found
- *       500:
- *         description: Server error
+ *     security:
+ *       - bearerAuth: []
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
 
@@ -185,11 +166,35 @@ router.put('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    Object.assign(student, req.body);
+    // Update fields
+    const {
+      firstName,
+      lastName,
+      email,
+      age,
+      course,
+      year,
+      gender,
+      enrollmentDate
+    } = req.body;
+
+    if (firstName) student.firstName = firstName;
+    if (lastName) student.lastName = lastName;
+    if (email) student.email = email;
+    if (age) student.age = age;
+    if (course) student.course = course;
+    if (year) student.year = year;
+    if (gender) student.gender = gender;
+    if (enrollmentDate) student.enrollmentDate = new Date(enrollmentDate);
+
     await student.save();
 
     res.status(204).send();
+
   } catch (err) {
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Invalid ID format' });
+    }
     res.status(500).json({ message: err.message });
   }
 });
@@ -200,21 +205,10 @@ router.put('/:id', async (req, res) => {
  *   delete:
  *     summary: Delete a student
  *     tags: [Students]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Student deleted
- *       404:
- *         description: Student not found
- *       500:
- *         description: Server error
+ *     security:
+ *       - bearerAuth: []
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
 
@@ -223,7 +217,11 @@ router.delete('/:id', async (req, res) => {
     }
 
     res.status(200).json({ message: 'Student deleted successfully' });
+
   } catch (err) {
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Invalid ID format' });
+    }
     res.status(500).json({ message: err.message });
   }
 });

@@ -8,7 +8,9 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
 
 const app = express();
+const authRoutes = require('./routes/auth');
 
+app.use('/auth', authRoutes);
 // Debug logs
 console.log('MongoDB URI defined:', process.env.MONGODB_URI ? 'Yes' : 'No');
 console.log('PORT defined:', process.env.PORT ? 'Yes' : 'No');
