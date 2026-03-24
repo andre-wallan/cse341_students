@@ -15,7 +15,7 @@ const options = {
         description: 'Local server'
       },
       {
-        url: 'https://cse341-0qm8.onrender.com',
+        url: 'https://cse341-students-svsc.onrender.com',
         description: 'Production server'
       }
     ],
