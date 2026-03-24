@@ -5,7 +5,7 @@
     "description": "API for managing contacts information",
     "version": "1.0.0"
   },
-  "host": "cse341-0qm8.onrender.com",
+  "host": "https://cse341-students-svsc.onrender.com",
   "basePath": "/",
   "tags": [
     {
