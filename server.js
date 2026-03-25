@@ -7,7 +7,9 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
 
 const app = express();
-
+app.get('/', (req, res) => {
+    res.send('🚀 Hello Students API is running...');
+});
 // Middleware
 app.use(cors());
 app.use(express.json());
