@@ -4,7 +4,7 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'CSE341 Student API',
+      title: 'Student API',
       version: '1.0.0',
       description: 'API for managing students with authentication'
     },

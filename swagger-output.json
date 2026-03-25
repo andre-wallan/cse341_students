@@ -1,16 +1,16 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "Contacts API",
-    "description": "API for managing contacts information",
+    "title": "Students API",
+    "description": "API for managing student information",
     "version": "1.0.0"
   },
   "host": "cse341-students-svsc.onrender.com",
   "basePath": "/",
   "tags": [
     {
-      "name": "Contacts",
-      "description": "Endpoints for managing contacts"
+      "name": "Students",
+      "description": "Endpoints for managing student information"
     }
   ],
   "schemes": [
