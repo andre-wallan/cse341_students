@@ -7,7 +7,7 @@ const passport = require('./config/passport');
 
 const connectDB = require('./db/connect');
 const studentRoutes = require('./routes/students');
-const authRoutes = require('./routes/isAuthenticated');
+const authRoutes = require('./routes/isAuthenticatede');
 const courseRoutes = require('./routes/courses'); // ✅ ADD THIS
 
 const swaggerUi = require('swagger-ui-express');
