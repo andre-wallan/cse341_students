@@ -4,9 +4,16 @@ const Student = require('../models/student');
 exports.getAllStudents = async (req, res) => {
   try {
     const students = await Student.find();
-    res.status(200).json(students);
+    return res.status(200).json({
+      success: true,
+      count: students.length,
+      data: students
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
@@ -14,11 +21,23 @@ exports.getAllStudents = async (req, res) => {
 exports.getStudentById = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
-    if (!student) return res.status(404).json({ message: 'Student not found' });
 
-    res.json(student);
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: student
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
@@ -27,9 +46,16 @@ exports.createStudent = async (req, res) => {
   try {
     const student = new Student(req.body);
     const newStudent = await student.save();
-    res.status(201).json(newStudent);
+
+    return res.status(201).json({
+      success: true,
+      data: newStudent
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
@@ -39,14 +65,28 @@ exports.updateStudent = async (req, res) => {
     const updated = await Student.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
+      {
+        new: true,
+        runValidators: true // ✅ VERY IMPORTANT
+      }
     );
 
-    if (!updated) return res.status(404).json({ message: 'Student not found' });
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
 
-    res.json(updated);
+    return res.status(200).json({
+      success: true,
+      data: updated
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
   }
 };
 
@@ -55,10 +95,21 @@ exports.deleteStudent = async (req, res) => {
   try {
     const deleted = await Student.findByIdAndDelete(req.params.id);
 
-    if (!deleted) return res.status(404).json({ message: 'Student not found' });
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
 
-    res.json({ message: 'Student deleted' });
+    return res.status(200).json({
+      success: true,
+      message: 'Student deleted successfully'
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 };

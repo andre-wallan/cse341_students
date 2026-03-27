@@ -1,27 +1,46 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const passport = require('./config/passport');
+
 const connectDB = require('./db/connect');
 const studentRoutes = require('./routes/students');
-const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/isAuthenticated');
+const courseRoutes = require('./routes/courses'); // ✅ ADD THIS
+
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
 
 const app = express();
-app.get('/', (req, res) => {
-    res.send('🚀 Hello Students API is running...');
-});
-// Middleware
+
+// Middleware (ORDER MATTERS)
 app.use(cors());
 app.use(express.json());
 
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'supersecret',
+  resave: false,
+  saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Routes
+app.get('/', (req, res) => {
+  res.send('🚀 Hello Students API is running...');
+});
+
 app.use('/auth', authRoutes);
 app.use('/students', studentRoutes);
+app.use('/courses', courseRoutes); // ✅ REQUIRED for rubric
 
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// DB & server start
+// DB & Server
 connectDB()
   .then(() => {
     const PORT = process.env.PORT || 5000;

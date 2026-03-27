@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/studentscontroller');
-const auth = require('../middleware/auth');
+const isAuthenticated = require('../middleware/isAuthenticated');
 
 /**
  * @swagger
@@ -16,10 +16,8 @@ const auth = require('../middleware/auth');
  *   get:
  *     summary: Get all students
  *     tags: [Students]
- *     security:
- *       - bearerAuth: []
  */
-router.get('/', auth, controller.getAllStudents);
+router.get('/', isAuthenticated, controller.getAllStudents);
 
 /**
  * @swagger
@@ -27,10 +25,8 @@ router.get('/', auth, controller.getAllStudents);
  *   get:
  *     summary: Get a student by ID
  *     tags: [Students]
- *     security:
- *       - bearerAuth: []
  */
-router.get('/:id', auth, controller.getStudentById);
+router.get('/:id', isAuthenticated, controller.getStudentById);
 
 /**
  * @swagger
@@ -38,10 +34,8 @@ router.get('/:id', auth, controller.getStudentById);
  *   post:
  *     summary: Create a new student
  *     tags: [Students]
- *     security:
- *       - bearerAuth: []
  */
-router.post('/', auth, controller.createStudent);
+router.post('/', isAuthenticated, controller.createStudent);
 
 /**
  * @swagger
@@ -49,10 +43,8 @@ router.post('/', auth, controller.createStudent);
  *   put:
  *     summary: Update a student
  *     tags: [Students]
- *     security:
- *       - bearerAuth: []
  */
-router.put('/:id', auth, controller.updateStudent);
+router.put('/:id', isAuthenticated, controller.updateStudent);
 
 /**
  * @swagger
@@ -60,9 +52,7 @@ router.put('/:id', auth, controller.updateStudent);
  *   delete:
  *     summary: Delete a student
  *     tags: [Students]
- *     security:
- *       - bearerAuth: []
  */
-router.delete('/:id', auth, controller.deleteStudent);
+router.delete('/:id', isAuthenticated, controller.deleteStudent);
 
 module.exports = router;

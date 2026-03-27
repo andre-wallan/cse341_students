@@ -1,33 +1,32 @@
 const mongoose = require('mongoose');
 
-const studentSchema = new mongoose.Schema({
-  firstName: {
+const courseSchema = new mongoose.Schema({
+  name: {
     type: String,
     required: true,
     minlength: 2,
     trim: true
   },
-  lastName: {
-    type: String,
-    required: true,
-    minlength: 2,
-    trim: true
-  },
-  email: {
+  code: {
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    match: /.+\@.+\..+/ // email validation
+    uppercase: true,
+    trim: true
   },
-  age: {
+  instructor: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  credits: {
     type: Number,
     required: true,
     min: 1,
-    max: 120
+    max: 10
   }
 }, {
   timestamps: true
 });
 
-module.exports = mongoose.model('Student', studentSchema);
+module.exports = mongoose.model('Course', courseSchema);
