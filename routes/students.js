@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/studentscontroller');
-const isAuthenticated = require('../middleware/Auth');
+const isAuthenticated = require('../middleware/auth');
 
 /**
  * @swagger
