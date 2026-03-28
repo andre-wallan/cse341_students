@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
 
 app.use('/auth', authRoutes);
 app.use('/students', studentRoutes);
-app.use('/courses', courseRoutes); // ✅ REQUIRED for rubric
+app.use('/courses', courseRoutes); //  REQUIRED for rubric
 
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
