@@ -15,7 +15,7 @@ const swaggerDocument = require('./swagger-output.json');
 
 const app = express();
 
-// Middleware (ORDER MATTERS)
+// Middleware (ORDERMATTERS)
 app.use(cors());
 app.use(express.json());
 
